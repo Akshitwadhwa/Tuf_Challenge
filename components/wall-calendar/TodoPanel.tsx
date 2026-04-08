@@ -147,15 +147,12 @@ export function TodoPanel({
                   aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.8"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M9.5 4.75h5" />
-                  <path d="M4.75 7.25h14.5" />
-                  <path d="M7.75 7.25v10.5c0 .83.67 1.5 1.5 1.5h5.5c.83 0 1.5-.67 1.5-1.5V7.25" />
-                  <path d="M10.25 10.25v5.5" />
-                  <path d="M13.75 10.25v5.5" />
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </article>
