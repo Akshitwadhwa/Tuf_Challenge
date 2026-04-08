@@ -1021,6 +1021,33 @@
   line-height: 1;
 }
 
+.notesHeadingMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.clearButton {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgba(74, 162, 239, 0.2);
+  border-radius: 6px;
+  background: rgba(74, 162, 239, 0.08);
+  color: #2f83ce;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.clearButton:hover {
+  background: rgba(74, 162, 239, 0.12);
+  border-color: rgba(74, 162, 239, 0.3);
+}
+
+.clearButton:active {
+  transform: scale(0.96);
+}
+
 .savedIndicator,
 .dateBadge,
 .noteDot,
@@ -1409,6 +1436,24 @@
   min-width: 1.65rem;
   padding-inline: 0.3rem;
   font-size: 0.92rem;
+}
+
+.bookmarkIcon {
+  width: 1.45rem;
+  height: 1.45rem;
+  min-width: 1.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4aa2ef;
+  flex-shrink: 0;
+}
+
+.bookmarkIcon svg {
+  width: 100%;
+  height: 100%;
+  stroke: #4aa2ef;
+  stroke-width: 0.5px;
 }
 
 .todayPill {

@@ -28,6 +28,7 @@ type NotesPanelProps = {
   onDraftNoteIconChange: (value: string) => void;
   onSaveRangeNote: () => void;
   onResetDraft: () => void;
+  onClearSelection: () => void;
   onDeleteRangeNote: (noteId: string) => void;
 };
 
@@ -43,6 +44,7 @@ export function NotesPanel({
   onDraftNoteIconChange,
   onSaveRangeNote,
   onResetDraft,
+  onClearSelection,
   onDeleteRangeNote
 }: NotesPanelProps) {
   const dayCount = getInclusiveDayCount(selection.startIso, selection.endIso);
@@ -72,11 +74,18 @@ export function NotesPanel({
             <p className={styles.sectionLabel}>Selection note</p>
             <h4>{formatSelectionLabel(selection.startIso, selection.endIso)}</h4>
           </div>
-          <span className={styles.dateBadge}>
-            {selection.startIso
-              ? `${dayCount} day${dayCount === 1 ? "" : "s"}`
-              : "No range"}
-          </span>
+          <div className={styles.notesHeadingMeta}>
+            <span className={styles.dateBadge}>
+              {selection.startIso
+                ? `${dayCount} day${dayCount === 1 ? "" : "s"}`
+                : "No range"}
+            </span>
+            {selection.startIso ? (
+              <button type="button" className={styles.clearButton} onClick={onClearSelection}>
+                Clear
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className={styles.noteIconPicker} aria-label="Select a note tag">

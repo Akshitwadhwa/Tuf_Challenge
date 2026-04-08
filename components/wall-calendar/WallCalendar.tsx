@@ -693,10 +693,6 @@ export function WallCalendar() {
         <div className={`${styles.calendarSheet} ${monthAnimationClass}`}>
           <CalendarHero
             monthLabel={formatMonthLabel(displayMonth)}
-            selectionLabel={formatSelectionLabel(selection.startIso, selection.endIso)}
-            hasSelection={Boolean(selection.startIso)}
-            isRangeLocked={Boolean(selection.endIso)}
-            onClearSelection={clearSelection}
             heroImage={heroImage}
             iplHero={iplHero}
             isIplHeroReady={isIplHeroReady}
@@ -757,6 +753,7 @@ export function WallCalendar() {
                     setDraftNoteIcon("");
                     setNoteValidationMessage(null);
                   }}
+                  onClearSelection={clearSelection}
                   onDeleteRangeNote={removeRangeNote}
                 />
               </div>

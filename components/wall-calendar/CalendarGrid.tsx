@@ -118,7 +118,11 @@ export function CalendarGrid({
                     {linkedEmoji}
                   </span>
                 ) : noteCount > 0 ? (
-                  <span className={styles.noteDot}>{noteCount}</span>
+                  <span className={styles.bookmarkIcon} aria-hidden="true" title={`${noteCount} note${noteCount > 1 ? "s" : ""}`}>
+                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 2h14a1 1 0 011 1v19l-8-5.5L5 22V3a1 1 0 010-1z" />
+                    </svg>
+                  </span>
                 ) : (
                   <span />
                 )}

@@ -5,10 +5,6 @@ import styles from "./WallCalendar.module.css";
 
 type CalendarHeroProps = {
   monthLabel: string;
-  selectionLabel: string;
-  hasSelection: boolean;
-  isRangeLocked: boolean;
-  onClearSelection: () => void;
   heroImage: string | null;
   iplHero: IplHeroData | null;
   isIplHeroReady: boolean;
@@ -20,10 +16,6 @@ type CalendarHeroProps = {
 
 export function CalendarHero({
   monthLabel,
-  selectionLabel,
-  hasSelection,
-  isRangeLocked,
-  onClearSelection,
   heroImage,
   iplHero,
   isIplHeroReady,
@@ -200,24 +192,6 @@ export function CalendarHero({
           <strong>{monthName.toUpperCase()}</strong>
         </div>
       </div>
-
-      {hasSelection ? (
-        <div className={styles.heroFooter}>
-          <div className={styles.selectionCard}>
-            <div>
-              <span className={styles.selectionLabel}>Current selection</span>
-              <strong>{selectionLabel}</strong>
-            </div>
-
-            <div className={styles.selectionMeta}>
-              <span>{isRangeLocked ? "Range locked" : "Pick an ending date"}</span>
-              <button type="button" onClick={onClearSelection}>
-                Clear
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </header>
   );
 }
