@@ -1,0 +1,59 @@
+:root {
+  --canvas: #efe3d1;
+  --canvas-shadow: #dcc2a5;
+  --paper: #f7efe2;
+  --paper-strong: #f1e2cc;
+  --ink: #2f241d;
+  --ink-soft: #5f5348;
+  --accent: #a85a38;
+  --accent-deep: #7f3922;
+  --accent-soft: rgba(168, 90, 56, 0.14);
+  --olive: #5f6c4a;
+  --gold: #c59e52;
+  --line: rgba(69, 49, 33, 0.12);
+  --shadow-lg: 0 30px 60px rgba(92, 63, 37, 0.16);
+  --shadow-md: 0 16px 30px rgba(92, 63, 37, 0.12);
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-body: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.7), transparent 32%),
+    linear-gradient(180deg, #f8f1e5 0%, #e8d7c0 55%, #dec7a8 100%);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.pageShell {
+  width: min(1040px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 2.75rem 0 4rem;
+}
+
+@media (max-width: 720px) {
+  .pageShell {
+    width: min(100vw - 1rem, 100%);
+    padding: 1.15rem 0 2rem;
+  }
+}
