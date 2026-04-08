@@ -25,6 +25,7 @@ export type TodoItem = {
   id: string;
   text: string;
   completed: boolean;
+  priority?: "urgent" | "today" | "rest";
 };
 
 const monthFormatter = new Intl.DateTimeFormat("en-US", {

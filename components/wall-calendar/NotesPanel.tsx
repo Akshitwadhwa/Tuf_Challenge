@@ -55,7 +55,6 @@ export function NotesPanel({
             <p className={styles.sectionLabel}>Monthly memo</p>
             <h4>Notes</h4>
           </div>
-          <span className={styles.savedIndicator}>{isHydrated ? "Autosaved" : "Loading"}</span>
         </div>
 
         <textarea

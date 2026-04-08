@@ -85,6 +85,8 @@ export function WallCalendar() {
   const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(new Date()));
   const [selection, setSelection] = useState<RangeSelection>(emptySelection);
   const [hoveredIso, setHoveredIso] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartIso, setDragStartIso] = useState<string | null>(null);
   const [draftNote, setDraftNote] = useState("");
   const [draftNoteIcon, setDraftNoteIcon] = useState("");
   const [draftTodo, setDraftTodo] = useState("");
@@ -247,7 +249,16 @@ export function WallCalendar() {
   }, []);
 
   useEffect(() => {
+    function handleGlobalMouseUp() {
+      if (isDragging) {
+        setIsDragging(false);
+        setDragStartIso(null);
+      }
+    }
+
+    window.addEventListener("mouseup", handleGlobalMouseUp);
     return () => {
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
       if (monthTransitionTimerRef.current !== null) {
         window.clearTimeout(monthTransitionTimerRef.current);
       }
@@ -256,7 +267,7 @@ export function WallCalendar() {
         window.clearTimeout(feedbackTimerRef.current);
       }
     };
-  }, []);
+  }, [isDragging]);
 
   const monthKey = getMonthKey(displayMonth);
   const currentMonthState = normalizeMonthState(monthStates[monthKey]);
@@ -360,6 +371,44 @@ export function WallCalendar() {
     }
 
     setSelection(sortRange(selection.startIso, iso));
+  }
+
+  function handleDayMouseDown(iso: string) {
+    setIsDragging(true);
+    setDragStartIso(iso);
+    setSelection({
+      startIso: iso,
+      endIso: null
+    });
+    setHoveredIso(null);
+    setNoteValidationMessage(null);
+  }
+
+  function handleDayMouseEnterWhileDragging(iso: string) {
+    if (!isDragging || !dragStartIso) {
+      return;
+    }
+
+    setHoveredIso(iso);
+  }
+
+  function handleDayMouseUpWhileDragging(iso: string) {
+    if (!isDragging || !dragStartIso) {
+      return;
+    }
+
+    setIsDragging(false);
+    setDragStartIso(null);
+    setHoveredIso(null);
+
+    if (dragStartIso === iso) {
+      setSelection({
+        startIso: iso,
+        endIso: iso
+      });
+    } else {
+      setSelection(sortRange(dragStartIso, iso));
+    }
   }
 
   function clearSelection() {
@@ -509,7 +558,7 @@ export function WallCalendar() {
     );
   }
 
-  function addTodo() {
+  function addTodo(priority?: "urgent" | "today" | "rest") {
     const text = draftTodo.trim();
 
     if (!text) {
@@ -532,7 +581,8 @@ export function WallCalendar() {
         {
           id: createTodoId(),
           text,
-          completed: false
+          completed: false,
+          priority
         },
         ...currentState.todos
       ]
@@ -721,8 +771,12 @@ export function WallCalendar() {
                     endIso: effectiveEndIso
                   }}
                   notes={currentMonthState.rangeNotes}
+                  isDragging={isDragging}
                   onDayClick={handleDayClick}
                   onDayHover={setHoveredIso}
+                  onDayMouseDown={handleDayMouseDown}
+                  onDayMouseEnter={handleDayMouseEnterWhileDragging}
+                  onDayMouseUp={handleDayMouseUpWhileDragging}
                 />
 
                 <TodoPanel

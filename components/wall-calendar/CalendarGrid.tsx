@@ -1,4 +1,5 @@
 import styles from "./WallCalendar.module.css";
+import { useState } from "react";
 import { isWithinRange, type CalendarCell, type SavedRangeNote } from "@/lib/calendar";
 
 const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -15,8 +16,12 @@ type CalendarGridProps = {
     endIso: string | null;
   };
   notes: SavedRangeNote[];
+  isDragging?: boolean;
   onDayClick: (iso: string) => void;
   onDayHover: (iso: string | null) => void;
+  onDayMouseDown?: (iso: string) => void;
+  onDayMouseEnter?: (iso: string) => void;
+  onDayMouseUp?: (iso: string) => void;
 };
 
 export function CalendarGrid({
@@ -25,9 +30,15 @@ export function CalendarGrid({
   selection,
   effectiveRange,
   notes,
+  isDragging = false,
   onDayClick,
-  onDayHover
+  onDayHover,
+  onDayMouseDown,
+  onDayMouseEnter,
+  onDayMouseUp
 }: CalendarGridProps) {
+  const [hoveredDayForTooltip, setHoveredDayForTooltip] = useState<string | null>(null);
+
   return (
     <section className={styles.datePanel} aria-label={`${monthLabel} calendar`}>
       <div className={styles.weekdayHeader}>
@@ -68,8 +79,30 @@ export function CalendarGrid({
                 .filter(Boolean)
                 .join(" ")}
               onClick={() => onDayClick(cell.iso)}
-              onMouseEnter={() => onDayHover(cell.iso)}
-              onMouseLeave={() => onDayHover(null)}
+              onMouseEnter={() => {
+                setHoveredDayForTooltip(cell.iso);
+                if (isDragging && onDayMouseEnter) {
+                  onDayMouseEnter(cell.iso);
+                } else {
+                  onDayHover(cell.iso);
+                }
+              }}
+              onMouseLeave={() => {
+                setHoveredDayForTooltip(null);
+                if (!isDragging) {
+                  onDayHover(null);
+                }
+              }}
+              onMouseDown={() => {
+                if (onDayMouseDown) {
+                  onDayMouseDown(cell.iso);
+                }
+              }}
+              onMouseUp={() => {
+                if (isDragging && onDayMouseUp) {
+                  onDayMouseUp(cell.iso);
+                }
+              }}
               aria-pressed={isInRange}
               aria-current={cell.isToday ? "date" : undefined}
               aria-label={`${fullDateLabel}${
@@ -91,6 +124,23 @@ export function CalendarGrid({
                 )}
                 {cell.isToday ? <span className={styles.todayPill}>Today</span> : null}
               </span>
+
+              {hoveredDayForTooltip === cell.iso && linkedNotes.length > 0 && (
+                <div className={styles.noteTooltip} role="tooltip">
+                  <div className={styles.tooltipContent}>
+                    {linkedNotes.map((note) => (
+                      <div key={note.id} className={styles.tooltipNote}>
+                        {note.icon && (
+                          <span className={styles.tooltipIcon} aria-hidden="true">
+                            {note.icon}
+                          </span>
+                        )}
+                        <span className={styles.tooltipText}>{note.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </button>
           );
         })}
