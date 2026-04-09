@@ -104,13 +104,11 @@ export function WallCalendar() {
   const [feedbackMessage, setFeedbackMessage] = useState<FeedbackMessage | null>(null);
   const [noteValidationMessage, setNoteValidationMessage] = useState<string | null>(null);
   const [todoValidationMessage, setTodoValidationMessage] = useState<string | null>(null);
-  const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const monthTransitionTimerRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
   const pendingMonthRef = useRef<Date | null>(null);
   const pendingSelectionRef = useRef<RangeSelection>(emptySelection);
-  const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const savedState = window.localStorage.getItem(storageKey);
@@ -778,258 +776,160 @@ export function WallCalendar() {
                   onDayMouseEnter={handleDayMouseEnterWhileDragging}
                   onDayMouseUp={handleDayMouseUpWhileDragging}
                 />
+
+                <TodoPanel
+                  items={currentMonthState.todos}
+                  draft={draftTodo}
+                  validationMessage={todoValidationMessage}
+                  maxLength={todoCharacterLimit}
+                  onDraftChange={(value) => {
+                    setDraftTodo(value);
+                    if (todoValidationMessage) {
+                      setTodoValidationMessage(null);
+                    }
+                  }}
+                  onAdd={addTodo}
+                  onToggle={toggleTodo}
+                  onDelete={deleteTodo}
+                />
               </div>
 
-              <div className={styles.mobileBottomPanel}>
-                <div className={styles.scrollContainer} ref={horizontalScrollRef}>
-                  {/* Panel 1: Selection note */}
-                  <div className={styles.scrollPanel}>
-                    <div className={styles.panelContent}>
-                      <div className={styles.notesHeading}>
-                        <div>
-                          <p className={styles.sectionLabel}>Selection note</p>
-                          <h4>{formatSelectionLabel(selection.startIso, selection.endIso)}</h4>
-                        </div>
-                        <div className={styles.notesHeadingMeta}>
-                          <span className={styles.dateBadge}>
-                            {selection.startIso
-                              ? `${getInclusiveDayCount(selection.startIso, selection.endIso)} day${getInclusiveDayCount(selection.startIso, selection.endIso) === 1 ? "" : "s"}`
-                              : "No range"}
-                          </span>
-                          {selection.startIso ? (
-                            <button type="button" className={styles.clearButton} onClick={clearSelection}>
-                              Clear
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
+              <div className={styles.notesSection}>
+                <section className={`${styles.noteSection} ${styles.rangeSection}`}>
+                  <div className={styles.notesHeading}>
+                    <div>
+                      <p className={styles.sectionLabel}>Selection note</p>
+                      <h4>{formatSelectionLabel(selection.startIso, selection.endIso)}</h4>
+                    </div>
+                    <div className={styles.notesHeadingMeta}>
+                      <span className={styles.dateBadge}>
+                        {selection.startIso
+                          ? `${getInclusiveDayCount(selection.startIso, selection.endIso)} day${getInclusiveDayCount(selection.startIso, selection.endIso) === 1 ? "" : "s"}`
+                          : "No range"}
+                      </span>
+                      {selection.startIso ? (
+                        <button type="button" className={styles.clearButton} onClick={clearSelection}>
+                          Clear
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
 
-                      <div className={styles.noteIconPicker} aria-label="Select a note tag">
-                        {[
-                          { value: "", label: "None", emoji: "•" },
-                          { value: "🎂", label: "Birthday", emoji: "🎂" },
-                          { value: "🏢", label: "Office", emoji: "🏢" },
-                          { value: "🏖️", label: "Holiday", emoji: "🏖️" },
-                          { value: "✈️", label: "Travel", emoji: "✈️" },
-                        ].map((option) => (
+                  <div className={styles.noteIconPicker} aria-label="Select a note tag">
+                    {[
+                      { value: "", label: "None", emoji: "•" },
+                      { value: "🎂", label: "Birthday", emoji: "🎂" },
+                      { value: "🏢", label: "Office", emoji: "🏢" },
+                      { value: "🏖️", label: "Holiday", emoji: "🏖️" },
+                      { value: "✈️", label: "Travel", emoji: "✈️" },
+                    ].map((option) => (
+                      <button
+                        key={option.label}
+                        type="button"
+                        className={`${styles.noteIconOption} ${draftNoteIcon === option.value ? styles.noteIconOptionActive : ""}`}
+                        onClick={() => setDraftNoteIcon(option.value)}
+                        aria-pressed={draftNoteIcon === option.value}
+                        title={option.label}
+                      >
+                        <span>{option.emoji}</span>
+                        <small>{option.label}</small>
+                      </button>
+                    ))}
+                  </div>
+
+                  <textarea
+                    className={`${styles.memoField} ${noteValidationMessage ? styles.fieldInvalid : ""}`}
+                    value={draftNote}
+                    onChange={(event) => {
+                      setDraftNote(event.target.value);
+                      if (noteValidationMessage) {
+                        setNoteValidationMessage(null);
+                      }
+                    }}
+                    placeholder="Attach a note to the selected day or range..."
+                    rows={4}
+                    aria-invalid={noteValidationMessage ? true : undefined}
+                  />
+
+                  {noteValidationMessage ? (
+                    <p className={`${styles.fieldFeedback} ${styles.fieldFeedbackError}`} role="status">
+                      {noteValidationMessage}
+                    </p>
+                  ) : (
+                    <p className={styles.fieldHint}>Choose a range, tag it, and save it to pin the note on the dates.</p>
+                  )}
+
+                  <div className={styles.noteActions}>
+                    <button type="button" onClick={saveRangeNote}>
+                      Save note
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.ghostButton}
+                      onClick={() => {
+                        setDraftNote("");
+                        setDraftNoteIcon("");
+                        setNoteValidationMessage(null);
+                      }}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </section>
+
+                <section className={`${styles.noteSection} ${styles.notesPad}`}>
+                  <div className={styles.notesHeading}>
+                    <div>
+                      <p className={styles.sectionLabel}>Monthly memo</p>
+                      <h4>Notes</h4>
+                    </div>
+                  </div>
+                  <textarea
+                    className={styles.memoField}
+                    value={currentMonthState.monthMemo}
+                    onChange={(event) => handleMonthMemoChange(event.target.value)}
+                    placeholder="Add reminders, goals, or deadlines for the month..."
+                    rows={5}
+                  />
+                </section>
+
+                <section className={`${styles.noteSection} ${styles.savedSection}`}>
+                  <div className={styles.notesHeading}>
+                    <div>
+                      <p className={styles.sectionLabel}>Saved annotations</p>
+                      <h4>
+                        {currentMonthState.rangeNotes.length} linked note{currentMonthState.rangeNotes.length === 1 ? "" : "s"}
+                      </h4>
+                    </div>
+                  </div>
+                  <div className={styles.noteList}>
+                    {currentMonthState.rangeNotes.length === 0 ? (
+                      <div className={styles.emptyState}>
+                        Saved range notes will appear here with their linked dates.
+                      </div>
+                    ) : (
+                      currentMonthState.rangeNotes.map((note) => (
+                        <div key={note.id} className={styles.noteItem}>
+                          <div className={styles.noteItemIcon}>{note.icon || "📌"}</div>
+                          <div className={styles.noteItemContent}>
+                            <p className={styles.noteItemText}>{note.text}</p>
+                            <p className={styles.noteItemMeta}>
+                              {note.startIso === note.endIso ? note.startIso : `${note.startIso} → ${note.endIso}`}
+                            </p>
+                          </div>
                           <button
-                            key={option.label}
                             type="button"
-                            className={`${styles.noteIconOption} ${draftNoteIcon === option.value ? styles.noteIconOptionActive : ""}`}
-                            onClick={() => setDraftNoteIcon(option.value)}
-                            aria-pressed={draftNoteIcon === option.value}
-                            title={option.label}
+                            className={styles.noteDeletButton}
+                            onClick={() => removeRangeNote(note.id)}
+                            aria-label="Delete note"
                           >
-                            <span>{option.emoji}</span>
-                            <small>{option.label}</small>
+                            ✕
                           </button>
-                        ))}
-                      </div>
-
-                      <textarea
-                        className={`${styles.memoField} ${noteValidationMessage ? styles.fieldInvalid : ""}`}
-                        value={draftNote}
-                        onChange={(event) => {
-                          setDraftNote(event.target.value);
-                          if (noteValidationMessage) {
-                            setNoteValidationMessage(null);
-                          }
-                        }}
-                        placeholder="Attach a note to the selected day or range..."
-                        rows={4}
-                        aria-invalid={noteValidationMessage ? true : undefined}
-                      />
-
-                      {noteValidationMessage ? (
-                        <p className={`${styles.fieldFeedback} ${styles.fieldFeedbackError}`} role="status">
-                          {noteValidationMessage}
-                        </p>
-                      ) : (
-                        <p className={styles.fieldHint}>Choose a range, tag it, and save it to pin the note on the dates.</p>
-                      )}
-
-                      <div className={styles.noteActions}>
-                        <button type="button" onClick={saveRangeNote}>
-                          Save note
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.ghostButton}
-                          onClick={() => {
-                            setDraftNote("");
-                            setDraftNoteIcon("");
-                            setNoteValidationMessage(null);
-                          }}
-                        >
-                          Reset
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Panel 2: Monthly memo */}
-                  <div className={styles.scrollPanel}>
-                    <div className={styles.panelContent}>
-                      <div className={styles.notesHeading}>
-                        <div>
-                          <p className={styles.sectionLabel}>Monthly memo</p>
-                          <h4>Notes</h4>
                         </div>
-                      </div>
-                      <textarea
-                        className={styles.memoField}
-                        value={currentMonthState.monthMemo}
-                        onChange={(event) => handleMonthMemoChange(event.target.value)}
-                        placeholder="Add reminders, goals, or deadlines for the month..."
-                        rows={5}
-                      />
-                    </div>
+                      ))
+                    )}
                   </div>
-
-                  {/* Panel 3: To-do checklist */}
-                  <div className={styles.scrollPanel}>
-                    <div className={styles.panelContent}>
-                      <div className={styles.notesHeading}>
-                        <div>
-                          <p className={styles.sectionLabel}>To-do list</p>
-                          <h4>Checklist</h4>
-                        </div>
-                      </div>
-                      <div className={styles.todoComposer}>
-                        <input
-                          type="text"
-                          value={draftTodo}
-                          onChange={(e) => {
-                            setDraftTodo(e.target.value);
-                            if (todoValidationMessage) {
-                              setTodoValidationMessage(null);
-                            }
-                          }}
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter") {
-                              addTodo();
-                            }
-                          }}
-                          placeholder="Add a new task..."
-                          maxLength={todoCharacterLimit}
-                          aria-invalid={todoValidationMessage ? true : undefined}
-                        />
-                        <button type="button" onClick={() => addTodo()}>
-                          Add
-                        </button>
-                      </div>
-                      {todoValidationMessage && (
-                        <p className={`${styles.fieldFeedback} ${styles.fieldFeedbackError}`} role="status">
-                          {todoValidationMessage}
-                        </p>
-                      )}
-                      <div className={styles.todoList}>
-                        {currentMonthState.todos.map((item) => (
-                          <div key={item.id} className={styles.todoItem}>
-                            <input
-                              type="checkbox"
-                              checked={item.completed}
-                              onChange={() => toggleTodo(item.id)}
-                              aria-label={`Mark "${item.text}" as ${item.completed ? "incomplete" : "complete"}`}
-                            />
-                            <span className={item.completed ? styles.todoCompleted : ""}>
-                              {item.text}
-                              {item.priority && (
-                                <span
-                                  className={styles.todoPriorityDot}
-                                  style={{
-                                    backgroundColor:
-                                      item.priority === "urgent" ? "#ef4444" :
-                                      item.priority === "today" ? "#1f2937" :
-                                      "#ffffff"
-                                  }}
-                                  title={item.priority}
-                                />
-                              )}
-                            </span>
-                            <button
-                              type="button"
-                              className={styles.todoDelete}
-                              onClick={() => deleteTodo(item.id)}
-                              aria-label={`Delete task "${item.text}"`}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Panel 4: Saved annotations */}
-                  <div className={styles.scrollPanel}>
-                    <div className={styles.panelContent}>
-                      <div className={styles.notesHeading}>
-                        <div>
-                          <p className={styles.sectionLabel}>Saved annotations</p>
-                          <h4>
-                            {currentMonthState.rangeNotes.length} linked note{currentMonthState.rangeNotes.length === 1 ? "" : "s"}
-                          </h4>
-                        </div>
-                      </div>
-                      <div className={styles.noteList}>
-                        {currentMonthState.rangeNotes.length === 0 ? (
-                          <div className={styles.emptyState}>
-                            Saved range notes will appear here with their linked dates.
-                          </div>
-                        ) : (
-                          currentMonthState.rangeNotes.map((note) => (
-                            <div key={note.id} className={styles.noteItem}>
-                              <div className={styles.noteItemIcon}>{note.icon || "📌"}</div>
-                              <div className={styles.noteItemContent}>
-                                <p className={styles.noteItemText}>{note.text}</p>
-                                <p className={styles.noteItemMeta}>
-                                  {note.startIso === note.endIso ? note.startIso : `${note.startIso} → ${note.endIso}`}
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                className={styles.noteDeletButton}
-                                onClick={() => removeRangeNote(note.id)}
-                                aria-label="Delete note"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  className={styles.scrollNavButton}
-                  style={{ left: "0.5rem" }}
-                  onClick={() => {
-                    if (horizontalScrollRef.current) {
-                      horizontalScrollRef.current.scrollBy({ left: -400, behavior: "smooth" });
-                      setCurrentPanelIndex(Math.max(0, currentPanelIndex - 1));
-                    }
-                  }}
-                  aria-label="Scroll left"
-                >
-                  ←
-                </button>
-
-                <button
-                  className={styles.scrollNavButton}
-                  style={{ right: "0.5rem" }}
-                  onClick={() => {
-                    if (horizontalScrollRef.current) {
-                      horizontalScrollRef.current.scrollBy({ left: 400, behavior: "smooth" });
-                      setCurrentPanelIndex(Math.min(3, currentPanelIndex + 1));
-                    }
-                  }}
-                  aria-label="Scroll right"
-                >
-                  →
-                </button>
+                </section>
               </div>
             </div>
           </div>
